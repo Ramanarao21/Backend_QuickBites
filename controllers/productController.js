@@ -1,8 +1,8 @@
 const Product = require('../models/Product');
-const Vendor = require("../models/Vendor");
 const multer = require("multer");
 const Firm = require("../models/Firm");
 const path = require("path");
+const { findById } = require('../models/Vendor');
 
 
 const storage = multer.diskStorage({
@@ -24,18 +24,13 @@ const addProduct = async(req,res) => {
 
         const firmId = req.params.firmId;
         const firm = await Firm.findById(firmId);
-
         if(!firm){
             return res.status(404).json({error:"no firm found"})
         }
-
         const product = new Product({
             productName,price,category,bestSeller,description,image,firm:firm._id
         })
-
-
         const savedProduct = await product.save();
-
         firm.products.push(savedProduct);
         await firm.save();
 
@@ -55,12 +50,12 @@ const getProductsByFirm = async(req,res) => {
         const firm = await Firm.findById(firmId);
 
         if(!firm){
-            res.status(404).json({error: "No Firm Found"});
+            return res.status(404).json({error: "No Firm Found"});
         }
 
         const restaurantName = firm.firmName;
         const products = await Product.find({firm:firmId});
-        res.status(200).json({restaurantName,products})
+        res.status(200).json({restaurantName,products});
 
     } catch (error) {
         console.log(error);
@@ -71,12 +66,14 @@ const getProductsByFirm = async(req,res) => {
 const deleteProductById = async(req,res) => {
     try {
         const productId = req.params.productId;
-
-        const deleteProduct = await Product.findByIdAndDelete(productId);
-
-        if(!deleteProduct){
+        console.log(productId)
+        const findProduct = await Product.findById(productId)
+        console.log(findProduct)
+        if(!findProduct){
             return res.status(404).json({error: "No Product found"})
         }
+        await Product.findByIdAndDelete(productId);
+        res.status(200).json({msg: "Successfully"})
 
     } catch (error) {
         console.log(error);

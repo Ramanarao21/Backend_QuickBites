@@ -5,7 +5,7 @@ const dotEnv = require("dotenv");
 
 dotEnv.config();
 
-const secretKey = process.env.WhatIsYourName;
+const secretKey = process.env.WhatIsYourName
  
 
 const vendorRegister = async(req,res) => {
@@ -23,7 +23,7 @@ const vendorRegister = async(req,res) => {
         });
         await newVendor.save();
 
-        res.status(200).json({message: "Vendor regsitartion Succesfully"});
+        res.status(201).json({message: "Vendor regsitartion Succesfully"});
         console.log("registered")
     }
     catch(error){
@@ -64,19 +64,21 @@ const getAllvendors = async(req,res) => {
     }
 }
 
-const getVendorById = async(req,res) => {
+const getVendorById = async(req, res) => {
     const vendorId = req.params.id;
 
     try {
-        const vendor = await Vendor.findById(vendorId)
-        if(!vendor){
-            res.status(404).json({error: "vendor not found"})
+        const vendor = await Vendor.findById(vendorId).populate('firm');
+        if (!vendor) {
+            return res.status(404).json({ error: "Vendor not found" })
         }
-        res.status(200).json({vendor})
 
+        const vendorFirmId = vendor.firm[0]._id;
+        
+        res.status(200).json({ vendorId, vendorFirmId, vendor })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error: 'Internal Server error'})
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
     }
 }
  
